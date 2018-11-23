@@ -20,15 +20,8 @@ import tech.eisen.server.http.HttpHeaders;
 
 public class RootHttpHandler extends EisenHttpHandler {
     
-    protected final HtmlPreProcessorPipe htmlPreprocessor;
-    
     public RootHttpHandler(@NotNull EisenServer server) {
         super(server);
-    
-        Map<String, String> defaultEnv = new HashMap<>();
-        defaultEnv.put("port", Integer.toString(server.getPort()));
-    
-        htmlPreprocessor = new HtmlPreProcessorPipe(server, defaultEnv);
     }
     
     @Override
@@ -68,6 +61,18 @@ public class RootHttpHandler extends EisenHttpHandler {
         if (uri.getPath().equals("/")) {
             resourceURL = getClass().getResource("/html/index.html");
         }
+    
+        Map<String, String> env = new HashMap<>();
+        env.put("port", Integer.toString(server.getPort()));
+        
+        HttpHeaders reqheaders = event.getRequestHeaders();
+        env.put("user.ip", event.getPeer().getHostName());
+        env.put("user.port", Integer.toString(event.getPeer().getPort()));
+        if (reqheaders.hasHeader("authorization")) {
+            env.put("user.name", reqheaders.getAuthorization().getUser());
+        }
+    
+        HtmlPreProcessorPipe htmlPreprocessor = new HtmlPreProcessorPipe(server, env);
     
         ResourceCache cache = server.getResourceCache();
         FileAttributes attributes = cache.getAttributes(resourceURL);

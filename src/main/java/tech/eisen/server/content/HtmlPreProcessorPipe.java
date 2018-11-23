@@ -31,7 +31,7 @@ public class HtmlPreProcessorPipe implements TextPipe {
             if (!started) {
                 if (c == INITIATOR) {
                     started = true;
-    
+                    
                     c = input.read();
                     if (c == INITIATOR) {
                         output.write(c);
@@ -54,8 +54,8 @@ public class HtmlPreProcessorPipe implements TextPipe {
                 output.write(processFunction(function, jsonObj));
                 started = false;
             }
-    
-            else if (c != '_' && !Character.isAlphabetic(c) && !Character.isDigit(c)) {
+            
+            else if (!isIdentifier((char) c)) {
                 String variable = buffer.toString();
                 String result = processVariable(variable);
                 output.write(result);
@@ -66,6 +66,12 @@ public class HtmlPreProcessorPipe implements TextPipe {
             
             else buffer.write(c);
         }
+    }
+    
+    private static boolean isIdentifier(char c) {
+        return c == '_' || c == '.'
+            || Character.isAlphabetic(c)
+            || Character.isDigit(c);
     }
     
     private static String readJSON(char first, Reader input) throws PreProcessException, IOException {
@@ -93,21 +99,66 @@ public class HtmlPreProcessorPipe implements TextPipe {
         }
     }
     
-    private String processFunction(String name, JsonObject json) throws PreProcessException {
+    private String processFunction(String name, JsonObject json) throws PreProcessException, IOException {
+        String result;
         switch (name.toLowerCase()) {
-            case "embed": return embed(json);
+            
+            case "embed":
+                result = embed(json);
+                return pipeBetweenStrings(result);
+            
+            case "if":
+                result = _if(json);
+                return pipeBetweenStrings(result);
+            
+            case "literal":
+                result = literal(json);
+                return result;
+            
             default: return "UNKNOWN_FUNCTION";
         }
     }
     
     private String embed(JsonObject json) throws PreProcessException {
         String src = json.get("src").getAsString();
-    
+        
         try (Reader reader = new InputStreamReader(server.getResource(src))) {
             return IOUtils.toString(reader);
         } catch (IOException e) {
             throw new PreProcessException(e);
         }
+    }
+    
+    private String _if(JsonObject json) throws PreProcessException {
+        boolean isTrue = true;
+        
+        if (json.has("defined")) {
+            if (!env.containsKey(json.get("defined").getAsString()))
+                isTrue = false;
+        }
+        
+        if (isTrue && json.has("true")) {
+            if (!json.get("true").getAsBoolean())
+                isTrue = false;
+        }
+        
+        if (isTrue && json.has("false")) {
+            if (json.get("false").getAsBoolean())
+                isTrue = false;
+        }
+        
+        // TODO add some more conditions
+        
+        if (isTrue)
+            return json.get("then").getAsString();
+        else if (json.has("else"))
+            return json.get("else").getAsString();
+        else
+            return "";
+    }
+    
+    private String literal(JsonObject json) {
+        return json.get("value").toString();
     }
     
     @NotNull
