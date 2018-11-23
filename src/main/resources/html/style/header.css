@@ -1,0 +1,55 @@
+header {
+    top: 0;
+    display: block;
+    position: fixed;
+    margin: auto;
+
+    width: 100%;
+    height: 1.35cm;
+
+    z-index: 1000;
+    background-color: #333;
+    box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.5);
+}
+
+.header_container {
+    z-index: 1000;
+    position: relative;
+    height: 100%;
+    margin: auto;
+    align-self: center;
+
+    min-width: 800px;
+    max-width: 50%;
+}
+
+.headertext {
+    overflow: auto;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+
+    font-family: monospace;
+    font-size: xx-large;
+    font-weight: bolder;
+    color: white;
+}
+
+.sign-in-button {
+    right: 0;
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+
+    font-size: 11pt;
+    padding: 5px;
+    border-radius: 3px;
+    color: white;
+    border: #7a2a19;
+    background-color: #e89232;
+    box-shadow: inset 0 1px 0 #ffdc92;
+    border: none;
+    font-family: sans-serif;
+    cursor: pointer;
+}

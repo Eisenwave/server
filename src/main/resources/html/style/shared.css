@@ -1,0 +1,21 @@
+body {
+    margin: 0;
+    background-color: #eee;
+}
+
+.outlet {
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+
+    word-wrap: break-word;
+
+    padding: 10px;
+
+    display: block;
+    margin: 2cm auto;
+    align-self: center;
+    min-width: 800px;
+    max-width: 50%;
+
+    box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.5);
+}
