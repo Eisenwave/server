@@ -24,7 +24,7 @@ public class Main {
         File directory = new File(args[1]);
         File keyStore = args.length > 2? new File(args[2]) : new File(System.getProperty("user.home"), ".keystore");
         
-        EisenServer server = new EisenServer(port, directory, true, "keykex-JKS-10", keyStore);
+        EisenServer server = new EisenServer(port, directory, true, "", keyStore);
         server.start();
         System.err.println("started server on port: " + server.getPort() + " in directory '" +
             server.getDirectory() + "'");
