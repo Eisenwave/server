@@ -12,23 +12,36 @@ public class HttpHeaders {
         LIST_SEPARATOR = Pattern.compile("[ ]*,[ ]*"),
         VALUE_SEPARATOR = Pattern.compile("[ ]*;[ ]*");
     
+    private final static String
+        ACCEPT_ENCODING = "accept-encoding",
+        AUTHORIZATION = "authorization",
+        CONTENT_ENCODING = "content-encoding",
+        CONTENT_LENGTH = "content-length",
+        CONTENT_TYPE = "content-type",
+        LAST_MODIFIED = "last-modified",
+        LOCATION = "location",
+        MAX_REDIRECTS = "max-redirects",
+        USER_AGENT = "user-agent";
+    
     private static HeaderValue parse(String name, String rawValue) {
         switch (name) {
-            case "accept-encoding":
+            case ACCEPT_ENCODING:
                 return new AcceptEncoding(rawValue);
-            case "authorization":
+            case AUTHORIZATION:
                 return new Authorization(rawValue);
-            case "user-agent":
+            case USER_AGENT:
                 return new RawHeader(rawValue);
-            case "content-encoding":
+            case CONTENT_ENCODING:
                 return new ContentEncoding(rawValue);
-            case "content-length":
+            case CONTENT_LENGTH:
                 return new NumericHeader(rawValue);
-            case "content-type":
+            case CONTENT_TYPE:
                 return new RawHeader(rawValue);
-            case "last-modified":
+            case LAST_MODIFIED:
                 return new LastModified(rawValue);
-            case "max-redirects":
+            case LOCATION:
+                return new RawHeader(rawValue);
+            case MAX_REDIRECTS:
                 return new NumericHeader(rawValue);
             default:
                 return new RawHeader(rawValue);
@@ -65,35 +78,39 @@ public class HttpHeaders {
     // SPECIFIC GETTERS
     
     public AcceptEncoding getAcceptEncoding() {
-        return (AcceptEncoding) entryMap.get("accept-encoding");
+        return (AcceptEncoding) entryMap.get(ACCEPT_ENCODING);
     }
     
     public Authorization getAuthorization() {
-        return (Authorization) entryMap.get("authorization");
+        return (Authorization) entryMap.get(AUTHORIZATION);
     }
     
     public List<String> getContentEncoding() {
-        return ((ContentEncoding) entryMap.get("content-encoding")).getEncoding();
+        return ((ContentEncoding) entryMap.get(CONTENT_ENCODING)).getEncoding();
     }
     
     public long getContentLength() {
-        return ((NumericHeader) entryMap.get("content-length")).longValue();
+        return ((NumericHeader) entryMap.get(CONTENT_LENGTH)).longValue();
     }
     
     public String getContentType() {
-        return getRawValue("content-type");
+        return getRawValue(CONTENT_TYPE);
     }
     
     public LastModified getLastModified() {
-        return (LastModified) entryMap.get("last-modified");
+        return (LastModified) entryMap.get(LAST_MODIFIED);
+    }
+    
+    public String getLocation() {
+        return getRawValue(LOCATION);
     }
     
     public int getMaxRedirects() {
-        return ((NumericHeader) entryMap.get("max-redirects")).intValue();
+        return ((NumericHeader) entryMap.get(MAX_REDIRECTS)).intValue();
     }
     
     public String getUserAgent() {
-        return getRawValue("user-agent");
+        return getRawValue(USER_AGENT);
     }
     
     // GENERIC SETTERS
@@ -110,35 +127,39 @@ public class HttpHeaders {
     // SPECIFIC SETTERS
     
     public void setAcceptEncoding(AcceptEncoding acceptEncoding) {
-        set("accept-encoding", acceptEncoding);
+        set(ACCEPT_ENCODING, acceptEncoding);
     }
     
     public void setAuthorization(Authorization authorization) {
-        set("authorization", authorization);
+        set(AUTHORIZATION, authorization);
     }
     
     public void setContentEncoding(String... encoding) {
-        set("content-encoding", new ContentEncoding(encoding));
+        set(CONTENT_ENCODING, new ContentEncoding(encoding));
     }
     
     public void setContentLength(long contentLength) {
-        set("content-length", Long.toString(contentLength));
+        set(CONTENT_LENGTH, Long.toString(contentLength));
     }
     
     public void setContentType(String type, @Nullable Charset charset) {
-        set("content-type", charset == null? type : type + "; " + charset.name());
+        set(CONTENT_TYPE, charset == null? type : type + "; " + charset.name());
     }
     
     public void setLastModified(long millis) {
-        set("last-modified", new LastModified(millis));
+        set(LAST_MODIFIED, new LastModified(millis));
+    }
+    
+    public void setLocation(String location) {
+        set(LOCATION, location);
     }
     
     public void setMaxRedirects(int redirects) {
-        set("max-redirects", new NumericHeader(redirects));
+        set(MAX_REDIRECTS, new NumericHeader(redirects));
     }
     
     public void setUserAgent(String agentString) {
-        set("max-redirects", agentString);
+        set(MAX_REDIRECTS, agentString);
     }
     
     // SUBCLASSES
@@ -282,19 +303,19 @@ public class HttpHeaders {
             
             this.raw = method + " " + user + " " + passwordStr;
         }
-    
+        
         public String getMethod() {
             return method;
         }
-    
+        
         public String getUser() {
             return user;
         }
-    
+        
         public char[] getPassword() {
             return password;
         }
-    
+        
         @Override
         public String getRawValue() {
             return raw;
@@ -336,13 +357,13 @@ public class HttpHeaders {
     }
     
     public static class LastModified implements HeaderValue {
-    
+        
         private final String value;
         
         public LastModified(String value) {
             this.value = value;
         }
-    
+        
         public LastModified(long millis) {
             this.value = HttpUtil.toHttpTime(millis);
         }

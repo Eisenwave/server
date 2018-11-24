@@ -4,8 +4,10 @@
         <a href="/" style="text-decoration: none">
             <h1 class="headertext">eisen.tech</h1>
         </a>
-        <a href="/login.html">
-            <button class="sign-in-button">Sign In</button>
-        </a>
+        $if{"defined": "user.name",
+        "then": "<p style=\"font-family: sans-serif; font-size: large; font-weight: bold; color: #FF2020; right: 0; position: absolute; top: 50%; transform: translate(0, -50%); margin: 0\">$user.name</p>",
+        "else": "<a href=\"/login.html\"><button class=\"sign-in-button\">Sign In</button></a>"
+        }
+
     </div>
 </header>

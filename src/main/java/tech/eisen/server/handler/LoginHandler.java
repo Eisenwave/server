@@ -52,11 +52,12 @@ public class LoginHandler extends EisenHttpHandler {
         }
         
         else {
-            event.setStatus(HttpStatus.OK);
-            resHeaders.setContentLength(1);
-            resHeaders.setContentType("text/plain", null);
+            event.setStatus(HttpStatus.MOVED_PERMANENTLY);
+            resHeaders.setLocation("/");
+            //resHeaders.setContentLength(1);
+            //resHeaders.setContentType("text/plain", null);
             event.writeHeaders();
-            event.getResponseStream().write('\n');
+            //event.getResponseStream().write('\n');
         }
         
         //URL loginURL = getClass().getClassLoader().getResource("html" + uri.getPath());
