@@ -68,9 +68,6 @@ public class EisenServer {
     }
     
     private void startHttps() throws IOException, GeneralSecurityException {
-        /*char[] pw = SecureHashes.hashPasswordPBDKDF2("".toCharArray());
-        System.out.println(pw);
-        System.out.println(SecureHashes.validatePasswordPBDKDF2("".toCharArray(), pw));*/
         SSLServerSocket serverSocket = initSSL();
         registerEvents();
         loadAccounts();
