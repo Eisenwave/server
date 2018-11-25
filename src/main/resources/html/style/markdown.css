@@ -1,0 +1,46 @@
+.mdBlockQuoteContainer {
+    width: available;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.mdBlockQuote {
+    width: available;
+    margin: 1em 0 1em 20px;
+}
+
+.mdCodeBlock {
+    background-color: #333333;
+    color: white;
+    padding: 8px 4px;
+    font-size: 10pt;
+}
+
+.mdH1 {
+    margin: 0.3em 0;
+}
+
+.mdH2 {
+    margin: 0.3em 0;
+}
+
+.mdH3 {
+    margin: 0.3em 0;
+}
+
+.mdH4 {
+    margin: 0.3em 0;
+}
+
+.mdH5 {
+    margin: 0.3em 0;
+}
+
+.mdImg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.mdParagraph {
+    font-family: sans-serif;
+    font-size: 11pt;
+}

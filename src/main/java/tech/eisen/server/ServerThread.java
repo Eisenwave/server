@@ -20,8 +20,6 @@ public class ServerThread extends Thread {
         this.sslSocket = sslSocket;
     }
     
-    
-    
     @Override
     public void run() {
         sslSocket.setEnabledCipherSuites(sslSocket.getSupportedCipherSuites());

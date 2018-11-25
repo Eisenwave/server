@@ -6,6 +6,8 @@ import java.io.*;
 
 public class HttpEvent {
     
+    private final static byte[] HTTP_1_1_BYTES = "HTTP/1.1 ".getBytes();
+    
     private final static byte[] CRLF = {'\r', '\n'};
     
     private final HttpPeer peer;
@@ -13,6 +15,7 @@ public class HttpEvent {
     private final OutputStream responseStream;
     private final HttpHeaders headers = new HttpHeaders();
     
+    private boolean writtenHeaders = false;
     private HttpStatus status;
     
     public HttpEvent(@NotNull HttpPeer peer, @NotNull HttpRequest request, @NotNull OutputStream responseStream) {
@@ -21,8 +24,20 @@ public class HttpEvent {
         this.responseStream = responseStream;
     }
     
-    public void writeHeaders() throws IOException {
-        responseStream.write("HTTP/1.1 ".getBytes());
+    /**
+     * Writes the HTTP version, status code and headers to the response stream.
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalStateException if the status has not been set yet
+     *
+     * @see #setStatus(HttpStatus)
+     * @see #hasWrittenHeaders()
+     */
+    public void writeHeaders() throws IOException, IllegalStateException {
+        if (status == null)
+            throw new IllegalStateException("Can't write headers before status has been set");
+        
+        responseStream.write(HTTP_1_1_BYTES);
         responseStream.write(Integer.toString(status.getCode()).getBytes());
         responseStream.write(' ');
         responseStream.write(status.toString().getBytes());
@@ -35,6 +50,17 @@ public class HttpEvent {
         }
     
         responseStream.write(CRLF);
+        this.writtenHeaders = true;
+    }
+    
+    /**
+     * Returns whether the headers have already been written once during this event. This method can be used for error
+     * handling through the same response stream as the event uses.
+     *
+     * @return whether {@link #writeHeaders()} has been called before
+     */
+    public boolean hasWrittenHeaders() {
+        return writtenHeaders;
     }
     
     @NotNull

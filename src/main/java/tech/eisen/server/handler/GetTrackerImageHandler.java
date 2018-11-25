@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class GetTrackerImageHandler extends EisenHttpHandler {
+public class GetTrackerImageHandler implements HttpEventHandler {
     
     /*
     static {
@@ -35,8 +35,10 @@ public class GetTrackerImageHandler extends EisenHttpHandler {
     }
     */
     
+    private final EisenServer server;
+    
     public GetTrackerImageHandler(@NotNull EisenServer server) {
-        super(server);
+        this.server = server;
     }
     
     @SuppressWarnings("SameParameterValue")
@@ -61,7 +63,7 @@ public class GetTrackerImageHandler extends EisenHttpHandler {
     }
     
     @Override
-    public void handleEvent(HttpEvent event) throws IOException {
+    public void handle(HttpEvent event) throws IOException {
         //System.out.println(exchange.getRequestURI());
         @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
         QueryMap queryMap = new QueryMap(event.getRequest().getURI().getQuery());

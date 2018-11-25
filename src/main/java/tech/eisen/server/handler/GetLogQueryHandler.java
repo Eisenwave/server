@@ -4,26 +4,24 @@ import org.jetbrains.annotations.NotNull;
 import tech.eisen.server.EisenServer;
 import tech.eisen.server.Main;
 import tech.eisen.server.QueryMap;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
-import tech.eisen.server.http.HttpEvent;
-import tech.eisen.server.http.HttpStatus;
-import tech.eisen.server.http.HttpHeaders;
+import org.apache.commons.csv.*;
+import tech.eisen.server.http.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
-public class GetLogQueryHandler extends EisenHttpHandler {
+public class GetLogQueryHandler implements HttpEventHandler {
+    
+    private final EisenServer server;
     
     public GetLogQueryHandler(@NotNull EisenServer server) {
-        super(server);
+        this.server = server;
     }
     
     @Override
-    public void handleEvent(HttpEvent event) throws IOException {
+    public void handle(HttpEvent event) throws IOException {
         StringWriter writer = new StringWriter();
         @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
         QueryMap query = new QueryMap(event.getRequest().getURI().getQuery());

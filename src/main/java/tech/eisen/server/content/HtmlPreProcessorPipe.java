@@ -1,8 +1,10 @@
 package tech.eisen.server.content;
 
+import com.github.rjeschke.txtmark.*;
 import com.google.gson.*;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tech.eisen.server.EisenServer;
 import tech.eisen.util.*;
 
@@ -14,12 +16,39 @@ public class HtmlPreProcessorPipe implements TextPipe {
     
     public static final char INITIATOR = '$';
     
+    /* private final static Configuration MARKDOWN_CONFIGURATION = Configuration.builder()
+        .enablePanicMode()
+        .enableSafeMode()
+        .build(); */
+    
+    private final static Decorator MARKDOWN_DECORATOR = new EisenMarkdownDecorator();
+    
     private final EisenServer server;
     private final Map<String, String> env = new HashMap<>();
+    private final boolean constantMode;
     
     public HtmlPreProcessorPipe(@NotNull EisenServer server, @NotNull Map<String, String> environment) {
         this.server = server;
         environment.forEach((key, val) -> env.put(key.toLowerCase(), val));
+        this.constantMode = false;
+    }
+    
+    public HtmlPreProcessorPipe(@NotNull EisenServer server,
+                                @NotNull Map<String, String> environment,
+                                boolean constantMode) {
+        this.server = server;
+        environment.forEach((key, val) -> env.put(key.toLowerCase(), val));
+        this.constantMode = constantMode;
+    }
+    
+    /**
+     * Returns if the processor is in constant mode. Only variables and function calls preceded with the {@code const:}
+     * modifier will accessed or invoked.
+     *
+     * @return whether the processor is in constant mode
+     */
+    public boolean isConstantMode() {
+        return constantMode;
     }
     
     @Override
@@ -50,18 +79,42 @@ public class HtmlPreProcessorPipe implements TextPipe {
             if (c == '{') {
                 String function = buffer.toString();
                 String json = readJSON((char) c, input);
-                JsonObject jsonObj = (JsonObject) new JsonParser().parse(json);
-                output.write(processFunction(function, jsonObj));
+    
+                boolean constant = function.startsWith("const:");
+                if (constant)
+                    function = function.substring(6);
+    
+                if (!constantMode || constant) {
+                    JsonObject jsonObj = (JsonObject) new JsonParser().parse(json);
+                    output.write(processFunction(function, jsonObj));
+                }
+                else {
+                    output.write(INITIATOR);
+                    output.write(function);
+                    output.write(json);
+                }
+    
                 started = false;
             }
             
             else if (!isIdentifier((char) c)) {
                 String variable = buffer.toString();
-                String result = processVariable(variable);
-                output.write(result);
-                started = false;
-                buffer = null;
+    
+                boolean constant = variable.startsWith("const:");
+                if (constant)
+                    variable = variable.substring(6);
+    
+                if (!constantMode || constant) {
+                    String result = env.get(variable.toLowerCase());
+                    output.write(result == null? INITIATOR + variable : result);
+                }
+                else {
+                    output.write(INITIATOR);
+                    output.write(variable);
+                }
+    
                 output.write(c);
+                started = false;
             }
             
             else buffer.write(c);
@@ -69,7 +122,7 @@ public class HtmlPreProcessorPipe implements TextPipe {
     }
     
     private static boolean isIdentifier(char c) {
-        return c == '_' || c == '.'
+        return c == '_' || c == '.' || c == ':'
             || Character.isAlphabetic(c)
             || Character.isDigit(c);
     }
@@ -103,14 +156,27 @@ public class HtmlPreProcessorPipe implements TextPipe {
         String result;
         switch (name.toLowerCase()) {
             
+            // $def{"<var1>": "<value1>", "<var2>": "<value2>", ..., "<varN>", "<valueN>"}
+            case "def": {
+                json.entrySet().forEach((entry) -> env.put(entry.getKey(), entry.getValue().getAsString()));
+                return "";
+            }
+            
+            // $embed{"src": "<resource_path>", "[type]": "<media_type_or_extension>"}
             case "embed":
                 result = embed(json);
                 return pipeBetweenStrings(result);
-            
+                
+            // $if{
+            //     "<condition>": "<parameter>",
+            //     "then": "<value_if_all_conditions_met>",
+            //     "else": "<value_if_not_all_conditions_met>"
+            // }
             case "if":
                 result = _if(json);
                 return pipeBetweenStrings(result);
             
+            // $literal{"value": "<value_exempted_from_further_pre-processing>"}
             case "literal":
                 result = literal(json);
                 return result;
@@ -122,11 +188,23 @@ public class HtmlPreProcessorPipe implements TextPipe {
     private String embed(JsonObject json) throws PreProcessException {
         String src = json.get("src").getAsString();
         
+        final String result;
         try (Reader reader = new InputStreamReader(server.getResource(src))) {
-            return IOUtils.toString(reader);
+            result = IOUtils.toString(reader);
         } catch (IOException e) {
             throw new PreProcessException(e);
         }
+        
+        if (json.has("type")) {
+            switch (json.get("type").getAsString()) {
+                case "md":
+                case "text/markdown": {
+                    return Processor.process(result, MARKDOWN_DECORATOR, true);
+                }
+            }
+        }
+        
+        return result;
     }
     
     private String _if(JsonObject json) throws PreProcessException {
@@ -159,12 +237,6 @@ public class HtmlPreProcessorPipe implements TextPipe {
     
     private String literal(JsonObject json) {
         return json.get("value").toString();
-    }
-    
-    @NotNull
-    private String processVariable(String name) {
-        String result = env.get(name.toLowerCase());
-        return result == null? "NULL" : result;
     }
     
 }
