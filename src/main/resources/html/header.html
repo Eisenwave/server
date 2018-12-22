@@ -5,9 +5,21 @@
             <h1 class="headertext">eisen.tech</h1>
         </a>
         $if{"defined": "user.name",
-        "then": "<p style=\"font-family: sans-serif; font-size: large; font-weight: bold; color: #FF2020; right: 0; position: absolute; top: 50%; transform: translate(0, -50%); margin: 0\">$user.name</p>",
+        "then": "<div style=\"font-family: sans-serif; right: 0; position: absolute; top: 50%; transform: translate(0, -50%); margin: 4px 0 0 0\">
+        <p style=\"float: left; margin: 4px 8px 4px 0;  font-size: small; font-weight: normal; color: rgba(255, 255, 255, 0.5);\">Logged in as:</p>
+        <p style=\"float: right; margin: 0; font-size: large; font-weight: bold; color: #FF2020;\">$user.name</p></div>",
         "else": "<a href=\"/login.html\"><button class=\"sign-in-button\">Sign In</button></a>"
         }
-
     </div>
 </header>
+
+<div class="sidebar bigScreen">
+    <div class="sidebarContent"><div style="padding-top: 1em">
+        <a href="/"class="sidebarEntry">Home</a>
+        <a href="/mdtest"class="sidebarEntry">Markdown Test Page</a>
+        <p class="sidebarEntry">Link 1</p>
+        <p class="sidebarEntry">Link 1</p>
+        <p class="sidebarEntry">Link 1</p>
+        <p class="sidebarEntry">Link 1</p>
+    </div></div>
+</div>

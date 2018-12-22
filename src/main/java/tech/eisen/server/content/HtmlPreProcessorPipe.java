@@ -21,7 +21,12 @@ public class HtmlPreProcessorPipe implements TextPipe {
         .enableSafeMode()
         .build(); */
     
-    private final static Decorator MARKDOWN_DECORATOR = new EisenMarkdownDecorator();
+    private final static Configuration MD_CONFIGURATION = Configuration.builder()
+        .enableSafeMode()
+        .forceExtentedProfile()
+        .setDecorator(new EisenMarkdownDecorator())
+        .setAllowSpacesInFencedCodeBlockDelimiters(false)
+        .build();
     
     private final EisenServer server;
     private final Map<String, String> env = new HashMap<>();
@@ -199,7 +204,7 @@ public class HtmlPreProcessorPipe implements TextPipe {
             switch (json.get("type").getAsString()) {
                 case "md":
                 case "text/markdown": {
-                    return Processor.process(result, MARKDOWN_DECORATOR, true);
+                    return Processor.process(result, MD_CONFIGURATION);
                 }
             }
         }
